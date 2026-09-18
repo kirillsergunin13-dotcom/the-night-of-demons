@@ -1,14 +1,16 @@
 from classs.game_state import GameState
 from ui.main_menu import *
 from ui.visual_field import *
+from ui.attack_visual import *
 import pygame
 import json
+import assets.attack.main_attack as attack
 
 pygame.init()
 font= pygame.font.Font(None,30)
 big_font= pygame.font.Font(None,70)
 
-damage_image=pygame.image.load("assets/images/table.png")
+damage_image=pygame.image.load("assets/images/demon.png")
 damage_image=pygame.transform.scale(damage_image,(960,620))
 
 class State:
@@ -16,14 +18,94 @@ class State:
     state_time:int = 0
     window:pygame.display
     game:GameState
+    attack:str
+    attack_time:int
+    darkness:int 
+    next_state:str
 
     def __init__(self,game:GameState):
         self.window=pygame.display.set_mode((960,620))
         self.game=game
-    def tick_run(self):
+        self.attack_time=0
+        self.darkness=0
+    def tick_run(self,codes:list,setting):
+        if 868989 not in codes:
+            if self.game.health<=0:
+                if 11 in codes:
+                    setting["hardcor_record"]=self.game.night
+                    with open("setting.json", 'w', encoding='utf-8') as file:
+                        json.dump(setting, file, indent=4)
+                else:
+                    setting["standart_record"]=self.game.night
+                    with open("setting.json", 'w', encoding='utf-8') as file:
+                        json.dump(setting, file, indent=4)
+                self.game=0
+                self.game=GameState(11 in codes)
+                self.state_name = "main_menu"
+                if 998875 not in codes:
+                    self.darkness=255
+                data=self.game.class_to_json()
+                if 11 in codes:
+                    with open("hardcor_game.json", 'w', encoding='utf-8') as file:
+                        json.dump(data, file, indent=4)
+                else:
+                    with open("standart_game.json", 'w', encoding='utf-8') as file:
+                        json.dump(data, file, indent=4)
+
         self.window.fill((0,0,0))
+
+        
+
         if self.state_name=="main_menu":
             visual_menu(self.window)
+        elif self.state_name=="attack_time":
+            if self.state_time<=0 or 123789 in codes:
+                self.state_name="game_find"
+                if 998875 not in codes:
+                    self.darkness=270
+                self.game.update()
+
+                data=self.game.class_to_json()
+                with open("standart_game.json", 'w', encoding='utf-8') as file:
+                    json.dump(data, file, indent=4)
+
+            visual_blocks(self.game.play_field.play_room,self.window)
+            visual_item(self.game.play_field.items,self.window)
+            visual_candel(self.game.candles,self.window)
+            visual_player(self.game.play_field.player_x,self.game.play_field.player_y,self.window)
+            self.window.blit(damage_image,(0,0))
+            visual_choice_attack(self.attack,self.window,self.attack_time)
+            self.window.blit(font.render(f"Здоровье {self.game.health}",True,(255,0,0)),(800,0))
+
+            if self.attack_time<=0:
+                player_x=self.game.play_field.player_x//50
+                player_y=self.game.play_field.player_y//50
+
+                print("x",player_x,"y",player_y)
+                if self.attack=="linery_attack" and player_y<=5:
+                    self.game.health-=1
+                elif self.attack=="table_attack" and self.game.play_field.play_room[player_y][player_x] !=1:
+                    self.game.health-=1
+                elif self.attack=="attack" and player_x>=5 and player_x<=10 :
+                    self.game.health-=1
+                elif self.attack=="right_attack" and player_x>=10:
+                    self.game.health-=1
+                elif self.attack=="left_attack" and player_x<=5:
+                    self.game.health-=1
+                elif self.attack=="y_wall" and player_y>=10:
+                    self.game.health-=1
+                self.attack=attack.attack_choice(self.state_time)
+                
+                self.attack_time=80
+                self.state_time-=90
+
+                if 8685848 in codes:
+                    self.attack_time=120
+                if 8784858689 in codes:
+                    self.state_time+=85
+            else:
+                self.attack_time-=1
+                        
         elif self.state_name=="game_find":
             visual_blocks(self.game.play_field.play_room,self.window)
             visual_item(self.game.play_field.items,self.window)
@@ -32,23 +114,20 @@ class State:
             if self.state_time>=0:
                 self.state_time-=1
                 self.window.blit(damage_image,(0,0))
+            self.window.blit(font.render(f"Здоровье {self.game.health}",True,(255,0,0)),(800,0))
             self.window.blit(font.render(f"Сентябрь {self.game.night}",True,(255,0,0)),(0,0))
 
-            if self.game.health<=0:
-                self.game=0
-                self.game=GameState(False)
-                self.state_name = "main_menu"
-                data=self.game.class_to_json()
-                with open("standart_game.json", 'w', encoding='utf-8') as file:
-                    json.dump(data, file, indent=4)
+            
 
 
-            if self.game.candles>=3 and self.game.crucifix>=0:
-                self.game.update()
+            if (self.game.candles>=3 and self.game.crucifix>=0) or 987321 in codes:
+                self.state_name="attack_time"
+                if 998875 not in codes:
+                    self.darkness=200
+                self.state_time=(self.game.night)*100
+                self.attack_time=80
+                self.attack=attack.attack_choice(self.state_time)
                 
-                data=self.game.class_to_json()
-                with open("standart_game.json", 'w', encoding='utf-8') as file:
-                    json.dump(data, file, indent=4)
                 
         elif self.state_name=="one_night":
             one_night_text_1=big_font.render(f"   Эта ваша первая ночь в этом доме, ",True,(255,0,0))
@@ -63,20 +142,41 @@ class State:
             self.window.blit(one_night_text_4,(100,190))
             self.window.blit(one_night_text_5,(100,220))
             self.window.blit(one_night_text_6,(100,250))
+
+        if self.darkness>0:
+            self.darkness-=1
+            dark = pygame.Surface((1000, 1000))
+            dark.fill((0,0,0))
+            dark.set_alpha(self.darkness) 
+            self.window.blit(dark,(0,0))
+        elif self.darkness<0:
+            self.darkness+=1
+            if 998875 in codes:
+                self.darkness=0
+            dark_anti = pygame.Surface((1000, 1000))
+            dark_anti.fill((0,0,0))
+            dark_anti.set_alpha(255+self.darkness) 
+            self.window.blit(dark_anti,(0,0))
+            if self.darkness==0:
+                self.state_name=self.next_state
+                self.darkness=255
+
+
             
     def keys_tick(self,keys):
         if keys[pygame.K_ESCAPE] and self.state_name=="game_find":
-            self.state_name="main_menu"
+            self.darkness=-255
+            self.next_state="main_menu"
 
-        if self.state_name=="game_find":
+        if self.state_name=="game_find" or self.state_name=="attack_time":
             if keys[pygame.K_w] and self.game.play_field.player_y>0:
-                self.game.play_field.player_y-=1
+                self.game.play_field.player_y-=5
             if keys[pygame.K_s] and self.game.play_field.player_y<620:
-                self.game.play_field.player_y+=1
+                self.game.play_field.player_y+=5
             if keys[pygame.K_a] and self.game.play_field.player_x>0:
-                self.game.play_field.player_x-=1
+                self.game.play_field.player_x-=5
             if keys[pygame.K_d] and self.game.play_field.player_x<960:
-                self.game.play_field.player_x+=1
+                self.game.play_field.player_x+=5
 
     def event_update(self,event):
         if event.type==pygame.MOUSEBUTTONUP and self.state_name=="game_find":
@@ -94,9 +194,12 @@ class State:
                         self.state_time+=60
         elif event.type==pygame.MOUSEBUTTONUP and self.state_name=="main_menu":
             if self.game.night==0:
-                self.state_name="one_night"
+                self.next_state="one_night"
+                self.darkness=-255
             else:
-                self.state_name="game_find"
+                self.next_state="game_find"
+                self.darkness=-255
         elif event.type==pygame.MOUSEBUTTONUP and self.state_name=="one_night":
-            self.state_name="game_find"
+            self.next_state="game_find"
+            self.darkness=-255
         

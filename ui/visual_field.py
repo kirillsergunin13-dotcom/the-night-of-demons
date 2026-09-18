@@ -14,7 +14,11 @@ big_candel=pygame.transform.scale(candel,(50,50))
 crucifix=pygame.image.load("assets/images/crucifix.png")
 crucifix=pygame.transform.scale(crucifix,(25,25))
 
+back=pygame.image.load("assets/images/down_ground.png")
+back=pygame.transform.scale(back,(960,620))
+
 def visual_blocks(field:list,window):
+    window.blit(back,(0,0))
     for y in range(0,12):
         for x in range(0,19):
             if field[y][x]==1:
