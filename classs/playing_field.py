@@ -6,20 +6,29 @@ class Item:
     x:int
     y:int
     demon_item:bool
+    lies:bool
     def __init__(self,variant,x,y,demon_item):
         self.visual=variant
         self.x=x
         self.y=y
         self.demon_item=demon_item
+        self.lies=True
+
+    
 
 class PlayingField:
     play_room:list
     items:list[Item]=[]
+    player_x:int=50
+    player_y:int=50
+
     def __init__(self,play_field:list):
+        self.player_x=0
+        self.player_y=0
         start_room=play_field
         for i in range(0,12):
             for j in range(0,19):
-                if start_room[i][j]==0 and random.choice(range(0,17))==0:
+                if start_room[i][j]==0 and random.choice(range(0,25))==0:
                     start_room[i][j]=3
         self.play_room=list(start_room)
         for candles in range(3):
