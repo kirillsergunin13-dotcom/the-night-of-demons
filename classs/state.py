@@ -7,8 +7,17 @@ import json
 import assets.attack.main_attack as attack
 
 pygame.init()
+pygame.mixer.init()
 font= pygame.font.Font(None,30)
 big_font= pygame.font.Font(None,70)
+
+walk = pygame.mixer.Sound("assets/music/walking.mp3")
+walk_channel = pygame.mixer.Channel(0)
+
+attack_music = pygame.mixer.Sound("assets/music/attack.mp3")
+item_music = pygame.mixer.Sound("assets/music/item.mp3")
+demon_music = pygame.mixer.Sound("assets/music/demon.mp3")
+die_music = pygame.mixer.Sound("assets/music/die.mp3")
 
 damage_image_one=pygame.image.load("assets/images/demon.png")
 damage_image_one=pygame.transform.scale(damage_image_one,(960,620))
@@ -39,12 +48,14 @@ class State:
             self.animation_tick=0
         if 868989 not in codes:
             if self.game.health<=0:
+                die_music.play()
+                print()
                 if 11 in codes:
-                    setting["hardcor_record"]=self.game.night
+                    setting["hardcor_record"]=max(self.game.night,setting["hardcor_record"])
                     with open("setting.json", 'w', encoding='utf-8') as file:
                         json.dump(setting, file, indent=4)
                 else:
-                    setting["standart_record"]=self.game.night
+                    setting["standart_record"]=max(self.game.night,setting["standart_record"])
                     with open("setting.json", 'w', encoding='utf-8') as file:
                         json.dump(setting, file, indent=4)
                 self.game=0
@@ -106,6 +117,7 @@ class State:
                     self.game.health-=1
                 elif self.attack=="y_wall" and player_y>=10:
                     self.game.health-=1
+                attack_music.play()
                 self.attack=attack.attack_choice(self.state_time)
                 
                 self.attack_time=80
@@ -136,6 +148,7 @@ class State:
 
 
             if (self.game.candles>=3 and self.game.crucifix>=0) or 987321 in codes:
+                demon_music.play()
                 self.state_name="attack_time"
                 if 998875 not in codes:
                     self.darkness=200
@@ -186,15 +199,23 @@ class State:
         if self.state_name=="game_find" or self.state_name=="attack_time":
             if keys[pygame.K_w] and self.game.play_field.player_y>16:
                 self.animation_tick+=10
+                if not walk_channel.get_busy():
+                    walk_channel.play(walk)
                 self.game.play_field.player_y-=5
             if keys[pygame.K_s] and self.game.play_field.player_y<580:
                 self.animation_tick+=10
+                if not walk_channel.get_busy():
+                    walk_channel.play(walk)
                 self.game.play_field.player_y+=5
             if keys[pygame.K_a] and self.game.play_field.player_x>16:
                 self.animation_tick+=10
+                if not walk_channel.get_busy():
+                    walk_channel.play(walk)
                 self.game.play_field.player_x-=5
             if keys[pygame.K_d] and self.game.play_field.player_x<940:
                 self.animation_tick+=10
+                if not walk_channel.get_busy():
+                    walk_channel.play(walk)
                 self.game.play_field.player_x+=5
 
     def event_update(self,event):
@@ -204,6 +225,7 @@ class State:
             for item in self.game.play_field.items:
                 if item.x==x and item.y==y and item.lies:
                     item.lies=False
+                    item_music.play()
                     if item.visual==0:
                         self.game.candles+=1
                     if item.visual==1:
