@@ -10,8 +10,11 @@ pygame.init()
 font= pygame.font.Font(None,30)
 big_font= pygame.font.Font(None,70)
 
-damage_image=pygame.image.load("assets/images/demon.png")
-damage_image=pygame.transform.scale(damage_image,(960,620))
+damage_image_one=pygame.image.load("assets/images/demon.png")
+damage_image_one=pygame.transform.scale(damage_image_one,(960,620))
+
+damage_image_two=pygame.image.load("assets/images/demon_anim.png")
+damage_image_two=pygame.transform.scale(damage_image_two,(960,620))
 
 class State:
     state_name:str = "main_menu"
@@ -22,13 +25,18 @@ class State:
     attack_time:int
     darkness:int 
     next_state:str
+    animation_tick:int
 
     def __init__(self,game:GameState):
+        self.animation_tick=0
         self.window=pygame.display.set_mode((960,620))
         self.game=game
         self.attack_time=0
         self.darkness=0
     def tick_run(self,codes:list,setting):
+        self.animation_tick+=1
+        if self.animation_tick>=350:
+            self.animation_tick=0
         if 868989 not in codes:
             if self.game.health<=0:
                 if 11 in codes:
@@ -57,7 +65,8 @@ class State:
         
 
         if self.state_name=="main_menu":
-            visual_menu(self.window)
+            self.animation_tick+=2
+            visual_menu(self.window,self.animation_tick)
         elif self.state_name=="attack_time":
             if self.state_time<=0 or 123789 in codes:
                 self.state_name="game_find"
@@ -72,8 +81,11 @@ class State:
             visual_blocks(self.game.play_field.play_room,self.window)
             visual_item(self.game.play_field.items,self.window)
             visual_candel(self.game.candles,self.window)
-            visual_player(self.game.play_field.player_x,self.game.play_field.player_y,self.window)
-            self.window.blit(damage_image,(0,0))
+            visual_player(self.game.play_field.player_x,self.game.play_field.player_y,self.window,self.animation_tick)
+            if self.animation_tick<300:
+                self.window.blit(damage_image_one,(0,0))
+            else:
+                self.window.blit(damage_image_two,(0,0))
             visual_choice_attack(self.attack,self.window,self.attack_time)
             self.window.blit(font.render(f"Здоровье {self.game.health}",True,(255,0,0)),(800,0))
 
@@ -110,10 +122,13 @@ class State:
             visual_blocks(self.game.play_field.play_room,self.window)
             visual_item(self.game.play_field.items,self.window)
             visual_candel(self.game.candles,self.window)
-            visual_player(self.game.play_field.player_x,self.game.play_field.player_y,self.window)
+            visual_player(self.game.play_field.player_x,self.game.play_field.player_y,self.window,self.animation_tick)
             if self.state_time>=0:
                 self.state_time-=1
-                self.window.blit(damage_image,(0,0))
+                if self.animation_tick<200:
+                    self.window.blit(damage_image_one,(0,0))
+                else:
+                    self.window.blit(damage_image_two,(0,0))
             self.window.blit(font.render(f"Здоровье {self.game.health}",True,(255,0,0)),(800,0))
             self.window.blit(font.render(f"Сентябрь {self.game.night}",True,(255,0,0)),(0,0))
 
@@ -169,13 +184,17 @@ class State:
             self.next_state="main_menu"
 
         if self.state_name=="game_find" or self.state_name=="attack_time":
-            if keys[pygame.K_w] and self.game.play_field.player_y>0:
+            if keys[pygame.K_w] and self.game.play_field.player_y>16:
+                self.animation_tick+=10
                 self.game.play_field.player_y-=5
-            if keys[pygame.K_s] and self.game.play_field.player_y<620:
+            if keys[pygame.K_s] and self.game.play_field.player_y<580:
+                self.animation_tick+=10
                 self.game.play_field.player_y+=5
-            if keys[pygame.K_a] and self.game.play_field.player_x>0:
+            if keys[pygame.K_a] and self.game.play_field.player_x>16:
+                self.animation_tick+=10
                 self.game.play_field.player_x-=5
-            if keys[pygame.K_d] and self.game.play_field.player_x<960:
+            if keys[pygame.K_d] and self.game.play_field.player_x<940:
+                self.animation_tick+=10
                 self.game.play_field.player_x+=5
 
     def event_update(self,event):

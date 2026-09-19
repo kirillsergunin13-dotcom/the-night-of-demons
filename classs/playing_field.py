@@ -23,8 +23,8 @@ class PlayingField:
     player_y:int=50
 
     def __init__(self,play_field:list):
-        self.player_x=0
-        self.player_y=0
+        self.player_x=20
+        self.player_y=300
         start_room=play_field
         for i in range(0,12):
             for j in range(0,19):

@@ -1,8 +1,11 @@
 import pygame
 from classs.playing_field import *
 
-player=pygame.image.load("assets/images/player.png")
+player_one=pygame.image.load("assets/images/player.png")
+player_one=pygame.transform.scale(player_one,(60,60))
 
+player_two=pygame.image.load("assets/images/player_animation.png")
+player_two=pygame.transform.scale(player_two,(60,60))
 
 table=pygame.image.load("assets/images/table.png")
 table=pygame.transform.scale(table,(50,50))
@@ -33,8 +36,11 @@ def visual_item(items:list[Item],window):
         elif item.visual==1 and item.lies:
             window.blit(crucifix,((item.x*50)+20,(item.y*50)+13))
 
-def visual_player(coordinate0,coordinate1,window):
-    window.blit(player,(coordinate0,coordinate1))
+def visual_player(coordinate0,coordinate1,window,animation_tick):
+    if animation_tick<200:
+        window.blit(player_one,(coordinate0,coordinate1))
+    else:
+        window.blit(player_two,(coordinate0,coordinate1))
 
 def visual_candel(count,window):
     if count>=1:
